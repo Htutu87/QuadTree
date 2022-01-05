@@ -8,8 +8,8 @@ std::vector<QGeoCoordinate> _kmlPoints;
 bool loadKmlPoints(RailroadTrack& track)
 {
     int time = clock();
-    track.readFromFile("/home/developer/workspace/TripAnalyser/submodules/ValeMapView/data/Z23_Eixo_Ferrovia.kml");
-    track.readFromFile("/home/developer/workspace/TripAnalyser/submodules/ValeMapView/data/Z24_Eixo_Ferrovia.kml");
+    track.readFromFile("/home/developer/workspace/efvm/TripAnalyser/submodules/ValeMapView/data/Z23_Eixo_Ferrovia.kml");
+    track.readFromFile("/home/developer/workspace/efvm/TripAnalyser/submodules/ValeMapView/data/Z24_Eixo_Ferrovia.kml");
     // track.readFromFile("/home/developer/workspace/TripAnalyser/ValeMapView/data/PNs_EFVM.kml");
 
     for (auto i: track._pathVector)
@@ -26,6 +26,7 @@ bool loadKmlPoints(RailroadTrack& track)
 
     return true;
 }
+
 void nearestTrackPoint( QGeoCoordinate& searchPoint, QGeoCoordinate& nearestPoint, double& nearestDistance )
 {
     nearestDistance = 10000000;
@@ -33,15 +34,17 @@ void nearestTrackPoint( QGeoCoordinate& searchPoint, QGeoCoordinate& nearestPoin
     QuadTree<QGeoCoordinate> kmlTree(_kmlPoints);
     kmlTree.build(_kmlPoints);
 
-    for(int j = 0 ; j < _kmlPoints.size() ; j++)
-    {
-        double distance = searchPoint.distanceTo( _kmlPoints[j] );
-        if ( distance < nearestDistance )
-        {
-            nearestDistance = distance;
-            nearestPoint = _kmlPoints[j];
-        }
-    }
+    QuadTree<QGeoCoordinate>::Node* locomotiveNode = kmlTree.search(kmlTree.root, searchPoint);
+
+//    for(int j = 0 ; j < _kmlPoints.size() ; j++)
+//    {
+//        double distance = searchPoint.distanceTo( _kmlPoints[j] );
+//        if ( distance < nearestDistance )
+//        {
+//            nearestDistance = distance;
+//            nearestPoint = _kmlPoints[j];
+//        }
+//    }
     std::cout << "Ponto mais proximo: " << nearestDistance << std::endl;
 }
 
@@ -50,12 +53,25 @@ int main()
     RailroadTrack track;
     loadKmlPoints(track);
 
-    QGeoCoordinate testPoint(-19.9098, -43.9127);   //Ponto arbitrário apenas para exemplo
-    QGeoCoordinate nearestPoint;
-    double minDistanceToTrack;
+    QGeoCoordinate testPoint(-20.330015578,-40.356491974);   //Ponto arbitrário apenas para exemplo
 
-    // Procurando o ponto mais proximo da Ferrovia
-    nearestTrackPoint( testPoint, nearestPoint, minDistanceToTrack );
+    //QGeoCoordinate testPoint(-20.330015578, -40.356491974);
+
+    QuadTree<QGeoCoordinate> kmlTree(_kmlPoints);
+
+    QuadTree<QGeoCoordinate>::Node* locomotiveNode;
+
+    locomotiveNode = kmlTree.search(kmlTree.root, testPoint);
+
+    std::cout << "-------------\nNode da locomotiva:\n";
+    std::cout << "xmin: " << locomotiveNode->xmin << "\n";
+    std::cout << "xmax: " << locomotiveNode->xmax << "\n";
+    std::cout << "ymin: " << locomotiveNode->ymin << "\n";
+    std::cout << "ymax: " << locomotiveNode->ymax << "\n";
+    std::cout << "-------------\n";
+
+    std::cout << "locNodeLat: " << locomotiveNode->element.latitude() << "\n";
+    std::cout << "locNodeLong: " << locomotiveNode->element.longitude()<< "\n";
 
     return 0;
 }

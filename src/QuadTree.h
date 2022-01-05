@@ -72,8 +72,15 @@ void QuadTree<T>::build( std::vector<T>& elements )
         ymax = (el.latitude() > ymax)?el.latitude():ymax;
     }
 
+    std::cout << "-------------\nNode geral:\n";
+    std::cout << "xmin: " << xmin << "\n";
+    std::cout << "xmax: " << xmax << "\n";
+    std::cout << "ymin: " << ymin << "\n";
+    std::cout << "ymax: " << ymax << "\n";
+    std::cout << "-------------\n";
+
     root = new Node;
-    split( root, xmin, ymin, xmax, ymax, elements, 25 );
+    split( root, xmin, ymin, xmax, ymax, elements, 0.0001);
 }
 
 
@@ -164,9 +171,50 @@ void QuadTree<T>::split( Node* node, double xmin, double ymin, double xmax, doub
 }
 
 template <class T>
-typename QuadTree<T>::Node* QuadTree<T>::search(Node* node, T point)
+typename QuadTree<T>::Node* QuadTree<T>::search(Node* currentNode, T locomotiveCoordinate)
 {
+    //Node* nextNode = new Node;
 
+
+    // Condição de parada: Se o nó atual não possuir nenhum filho, é sinal de que chegamos na "base da árvore".
+    if(  !(currentNode->bottomRight && currentNode->bottomLeft && currentNode->topRight && currentNode->topRight))
+                return currentNode;
+
+    double xm = (currentNode->xmin + currentNode->xmax)/2;
+    double ym = (currentNode->ymin + currentNode->ymax)/2;
+
+    // Indica que a locomotiva está em um quadrante superior.
+    if (locomotiveCoordinate.latitude() >= ym)
+    {
+        // Indica que está no quadrante superior direito.
+        if (locomotiveCoordinate.longitude() >= xm)
+        {
+            Node* nextNode(currentNode->topRight);
+            return search(nextNode, locomotiveCoordinate);
+        }
+        // Indica que está no quadrante superior esquerdo
+        else
+        {
+            Node* nextNode(currentNode->topLeft);
+            return search(nextNode, locomotiveCoordinate);
+        }
+    }
+    // Indica que a locomotiva está em um quadrante inferior.
+    else
+    {
+        // Indica que está no quadrante inferior direito
+        if (locomotiveCoordinate.longitude() >= xm)
+        {
+            Node* nextNode(currentNode->bottomRight);
+            return search(nextNode, locomotiveCoordinate);
+        }
+        // Indica que está no quadrante inferior esquerdo
+        else
+        {
+            Node* nextNode(currentNode->bottomLeft);
+            return search(nextNode, locomotiveCoordinate);
+        }
+    }
 }
 
 // Check if current quadtree contains the point
