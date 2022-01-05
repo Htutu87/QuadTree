@@ -8,8 +8,8 @@ std::vector<QGeoCoordinate> _kmlPoints;
 bool loadKmlPoints(RailroadTrack& track)
 {
     int time = clock();
-    track.readFromFile("/home/developer/workspace/efvm/TripAnalyser/submodules/ValeMapView/data/Z23_Eixo_Ferrovia.kml");
-    track.readFromFile("/home/developer/workspace/efvm/TripAnalyser/submodules/ValeMapView/data/Z24_Eixo_Ferrovia.kml");
+    track.readFromFile("/home/developer/workspace/TripAnalyser/submodules/ValeMapView/data/Z23_Eixo_Ferrovia.kml");
+    track.readFromFile("/home/developer/workspace/TripAnalyser/submodules/ValeMapView/data/Z24_Eixo_Ferrovia.kml");
     // track.readFromFile("/home/developer/workspace/TripAnalyser/ValeMapView/data/PNs_EFVM.kml");
 
     for (auto i: track._pathVector)
@@ -32,7 +32,7 @@ void nearestTrackPoint( QGeoCoordinate& searchPoint, QGeoCoordinate& nearestPoin
     nearestDistance = 10000000;
 
     QuadTree<QGeoCoordinate> kmlTree(_kmlPoints);
-    kmlTree.build(_kmlPoints);
+
 
     QuadTree<QGeoCoordinate>::Node* locomotiveNode = kmlTree.search(kmlTree.root, searchPoint);
 

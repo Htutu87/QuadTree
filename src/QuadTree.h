@@ -171,14 +171,18 @@ void QuadTree<T>::split( Node* node, double xmin, double ymin, double xmax, doub
 }
 
 template <class T>
+
 typename QuadTree<T>::Node* QuadTree<T>::search(Node* currentNode, T locomotiveCoordinate)
 {
     //Node* nextNode = new Node;
 
 
     // Condição de parada: Se o nó atual não possuir nenhum filho, é sinal de que chegamos na "base da árvore".
-    if(  !(currentNode->bottomRight && currentNode->bottomLeft && currentNode->topRight && currentNode->topRight))
-                return currentNode;
+    if (currentNode->bottomRight == nullptr &&
+        currentNode->bottomLeft  == nullptr &&
+        currentNode->topRight    == nullptr &&
+        currentNode->topRight    == nullptr)
+        return currentNode;
 
     double xm = (currentNode->xmin + currentNode->xmax)/2;
     double ym = (currentNode->ymin + currentNode->ymax)/2;
