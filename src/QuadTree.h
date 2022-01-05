@@ -4,6 +4,8 @@
 #include<vector>
 #include<iostream>
 
+class Node;
+
 template <class T>
 class QuadTree
 {
@@ -34,6 +36,8 @@ public:
 
     void split( Node* node, double xmin, double ymin, double xmax, double ymax, std::vector<T>& elements, double minSize = 0.00001 );
     bool intersects( Node* node, double xmin, double ymin, double xmax, double ymax );
+    QuadTree<T>::Node* search(Node* node, T point);
+    bool inBoundary(Node* node, T point);
     //void select( Node* node, double xmin, double ymin, double xmax, double ymax, std::vector<T>& selectedElements );
 };
 
@@ -105,7 +109,7 @@ void QuadTree<T>::split( Node* node, double xmin, double ymin, double xmax, doub
     else
     {
         //DEBUG: std::cerr << "{ xmin: " << node->xmin << " ymin: " << node->ymin << " xmax: " << node->xmax << " ymax: " << node->ymax << " }" << std::endl;
-        if (((node->xmax - node->xmin)/60 < minSize) || ((node->ymax - node->ymin)/60 < minSize))
+        if (((node->xmax - node->xmin) < minSize) || ((node->ymax - node->ymin) < minSize))
             return;
 
         double xm;
@@ -157,6 +161,19 @@ void QuadTree<T>::split( Node* node, double xmin, double ymin, double xmax, doub
             split( node->bottomRight, xm, ymin, xmax, ym, bottomRightElements, minSize );
         }
     }
+}
+
+template <class T>
+typename QuadTree<T>::Node* QuadTree<T>::search(Node* node, T point)
+{
+
+}
+
+// Check if current quadtree contains the point
+template <class T>
+bool QuadTree<T>::inBoundary(Node* node, T point)
+{
+
 }
 
 
