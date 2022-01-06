@@ -23,6 +23,7 @@ public:
         Node* bottomLeft;
         Node* bottomRight;
         T element;
+        bool hasElement = false;
     };
 
 public:
@@ -36,7 +37,8 @@ public:
 
     void split( Node* node, double xmin, double ymin, double xmax, double ymax, std::vector<T>& elements, double minSize = 0.00001 );
     bool intersects( Node* node, double xmin, double ymin, double xmax, double ymax );
-    QuadTree<T>::Node* search(Node* node, T point);
+    //QuadTree<T>::Node* search(Node* node, T point);
+    void search(Node* currentNode, T locomotiveCoordinate, double radius, std::vector<T>& intersectPoints );
     bool inBoundary(Node* node, T point);
     //void select( Node* node, double xmin, double ymin, double xmax, double ymax, std::vector<T>& selectedElements );
 };
@@ -72,15 +74,15 @@ void QuadTree<T>::build( std::vector<T>& elements )
         ymax = (el.latitude() > ymax)?el.latitude():ymax;
     }
 
-    std::cout << "-------------\nNode geral:\n";
-    std::cout << "xmin: " << xmin << "\n";
-    std::cout << "xmax: " << xmax << "\n";
-    std::cout << "ymin: " << ymin << "\n";
-    std::cout << "ymax: " << ymax << "\n";
-    std::cout << "-------------\n";
+//    std::cout << "-------------\nNode geral:\n";
+//    std::cout << "xmin: " << xmin << "\n";
+//    std::cout << "xmax: " << xmax << "\n";
+//    std::cout << "ymin: " << ymin << "\n";
+//    std::cout << "ymax: " << ymax << "\n";
+//    std::cout << "-------------\n";
 
     root = new Node;
-    split( root, xmin, ymin, xmax, ymax, elements, 0.0001);
+    split( root, xmin, ymin, xmax, ymax, elements, 0.0000001);
 }
 
 
@@ -112,6 +114,7 @@ void QuadTree<T>::split( Node* node, double xmin, double ymin, double xmax, doub
     if (elements.size() == 1)
     {
         node->element = elements[0];
+        node->hasElement = true;
     }
     else
     {
@@ -170,56 +173,93 @@ void QuadTree<T>::split( Node* node, double xmin, double ymin, double xmax, doub
     }
 }
 
+
+
+//template <class T>
+//typename QuadTree<T>::Node* QuadTree<T>::search(Node* currentNode, T locomotiveCoordinate)
+//{
+//    if (currentNode == nullptr)
+//        return nullptr;
+
+//    // Condição de parada: Se o nó atual não possuir nenhum filho, é sinal de que chegamos na "base da árvore".
+//    if (currentNode->bottomRight == nullptr &&
+//        currentNode->bottomLeft  == nullptr &&
+//        currentNode->topRight    == nullptr &&
+//        currentNode->topRight    == nullptr)
+//        return currentNode;
+
+//    double xm = (currentNode->xmin + currentNode->xmax)/2;
+//    double ym = (currentNode->ymin + currentNode->ymax)/2;
+
+//    // Indica que a locomotiva está em um quadrante superior.
+//    if (locomotiveCoordinate.latitude() >= ym)
+//    {
+//        // Indica que está no quadrante superior direito.
+//        if (locomotiveCoordinate.longitude() >= xm)
+//        {
+//            Node* nextNode(currentNode->topRight);
+//            return search(nextNode, locomotiveCoordinate);
+//        }
+//        // Indica que está no quadrante superior esquerdo
+//        else
+//        {
+//            Node* nextNode(currentNode->topLeft);
+//            return search(nextNode, locomotiveCoordinate);
+//        }
+//    }
+//    // Indica que a locomotiva está em um quadrante inferior.
+//    else
+//    {
+//        // Indica que está no quadrante inferior direito
+//        if (locomotiveCoordinate.longitude() >= xm)
+//        {
+//            Node* nextNode(currentNode->bottomRight);
+//            return search(nextNode, locomotiveCoordinate);
+//        }
+//        // Indica que está no quadrante inferior esquerdo
+//        else
+//        {
+//            Node* nextNode(currentNode->bottomLeft);
+//            return search(nextNode, locomotiveCoordinate);
+//        }
+//    }
+//}
+
 template <class T>
-
-typename QuadTree<T>::Node* QuadTree<T>::search(Node* currentNode, T locomotiveCoordinate)
+void QuadTree<T>::search(Node* currentNode,
+                         T locomotiveCoordinate,
+                         double radius,
+                         std::vector<T>& intersectCoordinates
+                         )
 {
-    //Node* nextNode = new Node;
+    if (currentNode == nullptr)
+        return;
 
+    // Se o quadrante está fora da circunferência, a busca morre.
+    if (
+        (locomotiveCoordinate.longitude() + radius) < (currentNode->xmin) ||
+        (locomotiveCoordinate.longitude() - radius) > (currentNode->xmax) ||
+        (locomotiveCoordinate.latitude() + radius) < (currentNode->ymin) ||
+        (locomotiveCoordinate.latitude() - radius) > (currentNode->ymax)
+        )
+        return;
 
-    // Condição de parada: Se o nó atual não possuir nenhum filho, é sinal de que chegamos na "base da árvore".
-    if (currentNode->bottomRight == nullptr &&
-        currentNode->bottomLeft  == nullptr &&
-        currentNode->topRight    == nullptr &&
-        currentNode->topRight    == nullptr)
-        return currentNode;
-
-    double xm = (currentNode->xmin + currentNode->xmax)/2;
-    double ym = (currentNode->ymin + currentNode->ymax)/2;
-
-    // Indica que a locomotiva está em um quadrante superior.
-    if (locomotiveCoordinate.latitude() >= ym)
+    if (currentNode->hasElement == false)
     {
-        // Indica que está no quadrante superior direito.
-        if (locomotiveCoordinate.longitude() >= xm)
-        {
-            Node* nextNode(currentNode->topRight);
-            return search(nextNode, locomotiveCoordinate);
-        }
-        // Indica que está no quadrante superior esquerdo
-        else
-        {
-            Node* nextNode(currentNode->topLeft);
-            return search(nextNode, locomotiveCoordinate);
-        }
+      // Tratar os filhos ->
+      search(currentNode->topLeft, locomotiveCoordinate, radius, intersectCoordinates);
+      search(currentNode->topRight, locomotiveCoordinate, radius, intersectCoordinates);
+      search(currentNode->bottomLeft, locomotiveCoordinate, radius, intersectCoordinates);
+      search(currentNode->bottomRight, locomotiveCoordinate, radius, intersectCoordinates);
+      return;
     }
-    // Indica que a locomotiva está em um quadrante inferior.
     else
     {
-        // Indica que está no quadrante inferior direito
-        if (locomotiveCoordinate.longitude() >= xm)
-        {
-            Node* nextNode(currentNode->bottomRight);
-            return search(nextNode, locomotiveCoordinate);
-        }
-        // Indica que está no quadrante inferior esquerdo
-        else
-        {
-            Node* nextNode(currentNode->bottomLeft);
-            return search(nextNode, locomotiveCoordinate);
-        }
+      if (locomotiveCoordinate.distanceTo(currentNode->element) < radius)
+        intersectCoordinates.push_back( currentNode->element );
     }
 }
+
 
 // Check if current quadtree contains the point
 template <class T>
